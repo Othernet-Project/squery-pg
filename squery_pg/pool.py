@@ -1,3 +1,9 @@
+"""
+pool.py: Connection Pool for PostgreSQL
+
+Based on https://github.com/gevent/gevent/blob/master/examples/psycopg2_pool.py
+"""
+
 from __future__ import print_function
 import sys
 import contextlib
