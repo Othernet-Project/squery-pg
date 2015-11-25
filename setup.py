@@ -3,10 +3,8 @@
 import os
 from setuptools import setup
 
-import squery_pg as pkg
 
-
-VERSION = pkg.__version__
+VERSION = '0.0.1'
 
 
 def read(fname):
@@ -18,7 +16,7 @@ setup(
     name='squery-pg',
     version=VERSION,
     license='BSD',
-    packages=[pkg.__name__],
+    packages=['squery_pg'],
     include_package_data=True,
     long_description=read('README.rst'),
     classifiers=[
