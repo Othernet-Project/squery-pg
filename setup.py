@@ -20,10 +20,11 @@ setup(
     include_package_data=True,
     long_description=read('README.rst'),
     classifiers=[
-        'Development Status :: 1 - Pre Alpha',
+        'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
+        'Topic :: Software Development :: Libraries',
     ],
     install_requires=[
         'psycopg2',

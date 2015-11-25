@@ -1,0 +1,2 @@
+recursive-include squery_pg *
+recursive-exclude tests *
