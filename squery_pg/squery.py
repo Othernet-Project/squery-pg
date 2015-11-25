@@ -134,8 +134,6 @@ class Database(object):
         self.close()
         call_relevant_args(self.drop, self.connection_params)
         call_relevant_args(self.create, self.connection_params)
-        #self.drop(**self.connection_params)
-        #self.create(**self.connection_params)
 
     @classmethod
     def connect(cls, host, port, database, user, password,
