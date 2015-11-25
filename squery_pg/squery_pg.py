@@ -16,7 +16,7 @@ import re
 
 import psycopg2
 
-from psycopg2.extras import NamedTupleCursor
+from psycopg2.extras import DictCursor
 
 from sqlize import (From, Where, Group, Order, Limit, Select, Update, Delete,
                     Insert, Replace, sqlin, sqlarray)
@@ -144,7 +144,7 @@ class Database(object):
                       user=user,
                       password=password,
                       maxsize=maxsize,
-                      cursor_factory=NamedTupleCursor)
+                      cursor_factory=DictCursor)
         pool = PostgresConnectionPool(**kwargs)
         try:
             conn = pool.create_connection()  # testing connection
