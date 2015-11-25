@@ -29,7 +29,6 @@ setup(
     install_requires=[
         'psycopg2',
         'gevent',
-        'psycogreen',
         'sqlize-pg',
     ],
 )
