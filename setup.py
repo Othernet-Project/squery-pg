@@ -26,7 +26,9 @@ setup(
         'Programming Language :: Python :: 3.4',
     ],
     install_requires=[
-        'sqlize',
-        'psycopg2'
+        'psycopg2',
+        'gevent',
+        'psycogreen',
+        'sqlize-pg',
     ],
 )
