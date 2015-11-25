@@ -18,8 +18,8 @@ import psycopg2
 
 from psycopg2.extras import DictCursor
 
-from sqlize import (From, Where, Group, Order, Limit, Select, Update, Delete,
-                    Insert, Replace, sqlin, sqlarray)
+from sqlize_pg import (From, Where, Group, Order, Limit, Select, Update,
+                       Delete, Insert, Replace, sqlin, sqlarray)
 
 from .utils import basestring
 from .pool import PostgresConnectionPool
@@ -37,7 +37,7 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
 
 def call_relevant_args(f, kwargs):
     valid_args = inspect.getargspec(f).args
-    relevant_args = {k: v for k,v in kwargs.items() if k in valid_args}
+    relevant_args = {k: v for k, v in kwargs.items() if k in valid_args}
     f(**relevant_args)
 
 

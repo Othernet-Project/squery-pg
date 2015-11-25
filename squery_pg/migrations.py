@@ -21,7 +21,7 @@ import re
 import sys
 
 import psycopg2
-import sqlize
+import sqlize_pg
 
 
 PYMOD_RE = re.compile(r'^((\d{2})_(\d{2})_[^.]+)\.pyc?$', re.I)
@@ -30,10 +30,10 @@ MIGRATION_TABLE = 'migrations'
 GET_VERSION_SQL = 'SELECT version FROM {table:s} WHERE id = 0;'.format(
     table=MIGRATION_TABLE
 )
-SET_VERSION_SQL = lambda version: sqlize.Replace(table=MIGRATION_TABLE,
-                                                 constraints=('id',),
-                                                 cols=('id', 'version'),
-                                                 vals=('0', str(version)))
+SET_VERSION_SQL = lambda version: sqlize_pg.Replace(table=MIGRATION_TABLE,
+                                                    constraints=('id',),
+                                                    cols=('id', 'version'),
+                                                    vals=('0', str(version)))
 CREATE_MIGRATION_TABLE_SQL = """
 CREATE TABLE {table:s}
 (
