@@ -22,6 +22,7 @@ from sqlize_pg import (From, Where, Group, Order, Limit, Select, Update,
                        Delete, Insert, Replace, sqlin, sqlarray)
 
 from .utils import basestring
+from .migrations import migrate
 from .pool import PostgresConnectionPool
 
 
@@ -43,6 +44,7 @@ def call_relevant_args(f, kwargs):
 
 class Database(object):
 
+    migrate = staticmethod(migrate)
     # Provide access to query classes for easier access
     sqlin = staticmethod(sqlin)
     sqlarray = staticmethod(sqlarray)
