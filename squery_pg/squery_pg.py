@@ -161,6 +161,6 @@ class Database(object):
 
 class DatabaseContainer(dict):
 
-    def __init__(self, databases):
+    def __init__(self, databases, **kwargs):
         super(DatabaseContainer, self).__init__(databases)
         self.__dict__ = self
