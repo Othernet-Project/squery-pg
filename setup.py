@@ -3,8 +3,10 @@
 import os
 from setuptools import setup
 
+import squery_pg as pkg
 
-VERSION = '0.0.1'
+
+VERSION = pkg.__version__
 
 
 def read(fname):
