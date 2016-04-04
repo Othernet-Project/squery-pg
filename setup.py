@@ -4,7 +4,7 @@ import os
 from setuptools import setup
 
 
-VERSION = '1.0'
+VERSION = '1.1'
 
 
 def read(fname):
@@ -15,7 +15,10 @@ def read(fname):
 setup(
     name='squery-pg',
     version=VERSION,
-    license='BSD',
+    author='Outernet Inc',
+    author_email='apps@outernet.is',
+    url='https://github.com/Outernet-Project/squery-pg',
+    license='GPLv3',
     packages=['squery_pg'],
     include_package_data=True,
     long_description=read('README.rst'),
