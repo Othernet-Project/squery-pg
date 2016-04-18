@@ -41,14 +41,51 @@ extensions.set_wait_callback(gevent_wait_callback)
 
 class DatabaseConnectionPool(object):
 
+    def __new__(cls, *args, **kwargs):
+        cls = super(DatabaseConnectionPool, cls).__new__(cls, *args, **kwargs)
+        # Depending on the maxsize argument, we will set up the class to be
+        # either a fake connection pool that uses only one connection object,
+        # or a real connection pool powered by gevent.
+        if kwargs.get('maxsize') == 1:
+            cls.get = cls.single_get
+            cls.put = cls.single_put
+            cls.closeall = cls.single_closeall
+        else:
+            cls.get = cls.multi_get
+            cls.put = cls.multi_put
+            cls.closeall = cls.multi_closeall
+        return cls
+
     def __init__(self, maxsize=100):
         if not isinstance(maxsize, integer_types):
             raise TypeError('Expected integer, got %r' % (maxsize, ))
         self.maxsize = maxsize
-        self.pool = Queue()
+        if self.maxsize == 1:
+            self._conn = None
+            self.pool = None
+        else:
+            self.pool = Queue()
         self.size = 0
 
-    def get(self):
+    # The following methods are used for single-connection mode.
+
+    def single_get(self):
+        if not self._conn or self._conn.closed:
+            self._conn = self.create_connection()
+        return self._conn
+
+    def single_put(self, item):
+        self._conn = item
+
+    def single_closeall(self):
+        try:
+            self._conn.close()
+        except Exception:
+            pass
+
+    # The following methods are used for real connection pool.
+
+    def multi_get(self):
         pool = self.pool
         if self.size >= self.maxsize or pool.qsize():
             return pool.get()
@@ -61,10 +98,10 @@ class DatabaseConnectionPool(object):
                 raise
             return new_item
 
-    def put(self, item):
+    def multi_put(self, item):
         self.pool.put(item)
 
-    def closeall(self):
+    def multie_closeall(self):
         while not self.pool.empty():
             conn = self.pool.get_nowait()
             try:
