@@ -101,7 +101,7 @@ class DatabaseConnectionPool(object):
     def multi_put(self, item):
         self.pool.put(item)
 
-    def multie_closeall(self):
+    def multi_closeall(self):
         while not self.pool.empty():
             conn = self.pool.get_nowait()
             try:
