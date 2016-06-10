@@ -27,17 +27,16 @@ import sqlize_pg
 PYMOD_RE = re.compile(r'^((\d{2})_(\d{2})_[^.]+)\.pyc?$', re.I)
 VERSION_MULTIPLIER = 10000
 MIGRATION_TABLE = 'migrations'
-GET_VERSION_SQL = 'SELECT version FROM {table:s} WHERE id = 0;'.format(
-    table=MIGRATION_TABLE
-)
-SET_VERSION_SQL = lambda version: sqlize_pg.Replace(table=MIGRATION_TABLE,
-                                                    constraints=('id',),
-                                                    cols=('id', 'version'),
-                                                    vals=('0', str(version)))
+GET_VERSION_SQL = sqlize_pg.Select(what='version',
+                                   sets=MIGRATION_TABLE,
+                                   where='package = %(package)s')
+SET_VERSION_SQL = sqlize_pg.Replace(table=MIGRATION_TABLE,
+                                    constraints=('package',),
+                                    cols=('package', 'version'))
 CREATE_MIGRATION_TABLE_SQL = """
 CREATE TABLE {table:s}
 (
-    id serial primary key,
+    package varchar primary key,
     version integer null
 );
 """.format(table=MIGRATION_TABLE)
@@ -114,46 +113,49 @@ def unpack_version(version):
     return (major_version, minor_version)
 
 
-def recreate(db):
+def recreate(db, package):
     db.recreate()
     db.executescript(CREATE_MIGRATION_TABLE_SQL)
-    db.execute(SET_VERSION_SQL(0))
+    db.execute(SET_VERSION_SQL, dict(package=package, version=0))
     return (0, 0)
 
 
-def get_version(db):
+def get_version(db, package):
     """ Query database and return migration version. WARNING: side effecting
     function! if no version information can be found, any existing database
     matching the passed one's name will be deleted and recreated.
 
     :param db:  connetion object
+    :param package: associated package name
     :returns:   current migration version
     """
     try:
-        result = db.fetchone(GET_VERSION_SQL)
+        result = db.fetchone(GET_VERSION_SQL, dict(package=package))
     except psycopg2.ProgrammingError as exc:
         if 'does not exist' in str(exc):
-            return recreate(db)
+            return recreate(db, package)
         raise
     else:
         if result is None:
-            return recreate(db)
+            set_version(db, package, 0, 0)
+            return (0, 0)
         version = result['version']
         return unpack_version(version)
 
 
-def set_version(db, major_version, minor_version):
+def set_version(db, package, major_version, minor_version):
     """ Set database migration version
 
     :param db:             connetion object
+    :param package:        package name
     :param major_version:  integer major version of migration
     :param minor_version:  integer minor version of migration
     """
     version = pack_version(major_version, minor_version)
-    db.execute(SET_VERSION_SQL(version))
+    db.execute(SET_VERSION_SQL, dict(package=package, version=version))
 
 
-def run_migration(major_version, minor_version, db, mod, conf={}):
+def run_migration(package, major_version, minor_version, db, mod, conf={}):
     """ Run migration script
 
     :param major_version: major version number of the migration
@@ -164,7 +166,7 @@ def run_migration(major_version, minor_version, db, mod, conf={}):
     """
     with db.transaction():
         mod.up(db, conf)
-        set_version(db, major_version, minor_version)
+        set_version(db, package, major_version, minor_version)
 
 
 def migrate(db, package, conf={}):
@@ -176,7 +178,8 @@ def migrate(db, package, conf={}):
     :param package:         package that contains the migrations
     :param conf:            application configuration object
     """
-    (current_major_version, current_minor_version) = get_version(db)
+    (current_major_version, current_minor_version) = get_version(db, package)
+    package_name = package
     package = importlib.import_module(package)
     logging.debug('Migration version for %s is %s.%s',
                   package.__name__,
@@ -188,5 +191,5 @@ def migrate(db, package, conf={}):
                          current_minor_version + 1)
     for (modname, major_version, minor_version) in migrations:
         mod = load_mod(modname, package)
-        run_migration(major_version, minor_version, db, mod, conf)
+        run_migration(package_name, major_version, minor_version, db, mod, conf)
         logging.debug("Finished migrating to %s", modname)
