@@ -68,7 +68,7 @@ class TestContainer(object):
 
     def add_database(self, database):
         name = database['name']
-        migrations = database.get('migrations')
+        database_sets = database.get('database_sets', [])
         real_dbname = random_name('test_{}'.format(name))
         self.databases[name] = {
             'name': real_dbname,
@@ -78,7 +78,7 @@ class TestContainer(object):
                                    user=self.user,
                                    password=self.password,
                                    maxsize=self.MAX_POOL_SIZE),
-            'migrations': migrations,
+            'database_sets': database_sets,
         }
 
     def load_fixtures(self, dbname, table, data):
@@ -100,10 +100,11 @@ class TestContainer(object):
 
     def setup(self, dbname):
         db = self.databases[dbname]['db']
-        migrations = self.databases[dbname]['migrations']
         db.recreate()
-        if migrations:
-            db.migrate(db, migrations, self.conf)
+        database_sets = self.databases[dbname]['database_sets']
+        for dbset in database_sets:
+            if dbset['migrations']:
+                db.migrate(db, dbset['name'], dbset['migrations'], self.conf)
 
     def teardownall(self):
         for dbname in self.databases:
